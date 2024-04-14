@@ -1,11 +1,32 @@
-import { useEffect, useState } from 'react'
-import { CountDownContainer, Separator } from './styles'
+import { useContext, useEffect } from 'react'
 import { differenceInSeconds } from 'date-fns'
+import { CountDownContainer, Separator } from './styles'
+import { CycleContext } from '../../../../contexts/CycleContext'
 
-export function CountDown() {
-  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
+export function Countdown() {
+  const {
+    activeCycle,
+    activeCycleId,
+    marckCurrentAsFinished,
+    amountSecondsPassed,
+    setSecondsPassed,
+  } = useContext(CycleContext)
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
+
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
+
+  const minutesAmount = Math.floor(currentSeconds / 60)
+  const secondsAmount = currentSeconds % 60
+
+  const minutes = String(minutesAmount).padStart(2, '0')
+  const seconds = String(secondsAmount).padStart(2, '0')
+
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds}`
+    }
+  }, [minutes, seconds, activeCycle])
 
   useEffect(() => {
     let interval: number
@@ -18,19 +39,11 @@ export function CountDown() {
         )
 
         if (secondsDifference >= totalSeconds) {
-          setCycles((state) =>
-            state.map((cycle) => {
-              if (cycle.id === activeCycleId) {
-                return { ...cycle, finishedDate: new Date() }
-              } else {
-                return cycle
-              }
-            }),
-          )
-          setAmountSecondsPassed(totalSeconds)
+          marckCurrentAsFinished()
+          setSecondsPassed(totalSeconds)
           clearInterval(interval)
         } else {
-          setAmountSecondsPassed(
+          setSecondsPassed(
             differenceInSeconds(new Date(), activeCycle.startDate),
           )
         }
@@ -39,7 +52,13 @@ export function CountDown() {
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycle, totalSeconds, activeCycleId])
+  }, [
+    activeCycle,
+    totalSeconds,
+    activeCycleId,
+    marckCurrentAsFinished,
+    setSecondsPassed,
+  ])
 
   return (
     <CountDownContainer>
