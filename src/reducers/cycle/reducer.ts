@@ -13,7 +13,6 @@ interface CyclesState {
   cycles: Cycle[]
   activeCycleId: string | null
 }
-
 export function cyclesReducer(state: CyclesState, action: any) {
   switch (action.type) {
     case ActionTypes.ADD_NEW_CYCLE:
